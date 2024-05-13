@@ -1,131 +1,86 @@
-import pygame
 import json
+import tkinter as tk
+from tkinter import messagebox
 
-# Initialize Pygame
-pygame.init()
+def login():
+    global logged
+    username = username_entry.get()
+    password = password_entry.get()
 
-# Set up display
-WIDTH, HEIGHT = 400, 300
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Login System")
+    if username == "quit" or password == "quit":
+        return
 
-# Colors
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-GRAY = (200, 200, 200)
-GREEN = (0, 255, 0)
-RED = (255, 0, 0)
-
-# Fonts
-font = pygame.font.Font(None, 32)
-
-# Load JSON data
-def load_data():
     with open('usernames.json', 'r') as usernames_file:
         username_data = json.load(usernames_file)
+
     with open('passwords.json', 'r') as passwords_file:
         password_data = json.load(passwords_file)
-    return username_data, password_data
 
-# Register new user
-def register(username, password):
-    username_data, password_data = load_data()
-    username_data['id'].append(username)
-    password_data['password'].append(password)
-    with open('usernames.json', 'w') as usernames_file:
-        json.dump(username_data, usernames_file)
-    with open('passwords.json', 'w') as passwords_file:
-        json.dump(password_data, passwords_file)
-    print("User {} registered successfully.".format(username))
-
-# Login user
-def login(username, password):
-    username_data, password_data = load_data()
     if username in username_data['id']:
         index = username_data['id'].index(username)
         if password == password_data['password'][index]:
-            print("Welcome, {}!".format(username))
-            return True
-    print("Incorrect username or password.")
-    return False
+            messagebox.showinfo("Login Successful", "Welcome, {}!".format(username))
+            logged = False
+            root.destroy()
+        else:
+            messagebox.showerror("Login Failed", "Incorrect password.")
+    else:
+        messagebox.showerror("Login Failed", "Username not found.")
 
-# Text input field
-class TextInput:
-    def __init__(self, rect, text=''):
-        self.rect = pygame.Rect(rect)
-        self.text = text
-        self.color = GRAY
-        self.active = False
+def register():
+    username = username_entry.get()
+    password = password_entry.get()
 
-    def handle_event(self, event):
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            if self.rect.collidepoint(event.pos):
-                self.active = True
-            else:
-                self.active = False
-            self.color = GREEN if self.active else GRAY
-        if event.type == pygame.KEYDOWN and self.active:
-            if event.key == pygame.K_RETURN:
-                self.active = False
-            elif event.key == pygame.K_BACKSPACE:
-                self.text = self.text[:-1]
-            else:
-                self.text += event.unicode
+    if username == "quit" or password == "quit":
+        return
 
-    def draw(self, surface):
-        text_surface = font.render(self.text, True, BLACK)
-        width = max(200, text_surface.get_width() + 10)
-        self.rect.w = width
-        pygame.draw.rect(surface, self.color, self.rect, 0)
-        surface.blit(text_surface, (self.rect.x + 5, self.rect.y + 5))
+    with open('usernames.json', 'r+') as usernames_file:
+        if "" == username or " " in username:
+            messagebox.showerror("Registration Failed", "Invalid arguments (cannot use spaces)")
+        else:
+            usernames_data = json.load(usernames_file)
+            usernames_data['id'].append(username)
+            usernames_file.seek(0)
+            json.dump(usernames_data, usernames_file)
 
-# Button
-class Button:
-    def __init__(self, rect, text, color, action):
-        self.rect = pygame.Rect(rect)
-        self.text = text
-        self.color = color
-        self.action = action
+    with open('passwords.json', 'r+') as passwords_file:
+        if "" == password or " " in password:
+            messagebox.showerror("Registration Failed", "Invalid arguments (cannot use spaces)")
+        else:
+            passwords_data = json.load(passwords_file)
+            passwords_data['password'].append(password)
+            passwords_file.seek(0)
+            json.dump(passwords_data, passwords_file)
+            messagebox.showinfo("Registration Successful", "User {} registered successfully.".format(username))
 
-    def handle_event(self, event):
-        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-            if self.rect.collidepoint(event.pos):
-                self.action()
+def quit_program():
+    root.destroy()
 
-    def draw(self, surface):
-        pygame.draw.rect(surface, self.color, self.rect, 0)
-        text_surface = font.render(self.text, True, BLACK)
-        text_rect = text_surface.get_rect(center=self.rect.center)
-        surface.blit(text_surface, text_rect)
+root = tk.Tk()
+root.title("Login/Register")
 
-# Initialize text input fields and buttons
-username_input = TextInput((100, 50, 200, 40))
-password_input = TextInput((100, 120, 200, 40))
-login_button = Button((100, 200, 90, 40), "Login", GRAY, lambda: login(username_input.text, password_input.text))
-register_button = Button((210, 200, 90, 40), "Register", GRAY, lambda: register(username_input.text, password_input.text))
-inputs = [username_input, password_input]
-buttons = [login_button, register_button]
+frame = tk.Frame(root)
+frame.pack(expand=True, fill="both")
 
-# Main loop
-running = True
-clock = pygame.time.Clock()
+username_label = tk.Label(frame, text="Enter username:")
+username_label.grid(row=0, column=0, padx=5, pady=5)
 
-while running:
-    screen.fill(WHITE)
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-        for input in inputs:
-            input.handle_event(event)
-        for button in buttons:
-            button.handle_event(event)
+username_entry = tk.Entry(frame)
+username_entry.grid(row=0, column=1, padx=5, pady=5)
 
-    for input in inputs:
-        input.draw(screen)
-    for button in buttons:
-        button.draw(screen)
+password_label = tk.Label(frame, text="Enter password:")
+password_label.grid(row=1, column=0, padx=5, pady=5)
 
-    pygame.display.flip()
-    clock.tick(30)
+password_entry = tk.Entry(frame, show="*")
+password_entry.grid(row=1, column=1, padx=5, pady=5)
 
-pygame.quit()
+login_button = tk.Button(frame, text="Login", command=login)
+login_button.grid(row=2, column=0, padx=5, pady=5)
+
+register_button = tk.Button(frame, text="Register", command=register)
+register_button.grid(row=2, column=1, padx=5, pady=5)
+
+quit_button = tk.Button(frame, text="Quit", command=quit_program)
+quit_button.grid(row=2, column=2, padx=5, pady=5)
+
+root.mainloop()
