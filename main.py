@@ -5,7 +5,7 @@ logged = True
 
 while logged:
 
-    action = input("Enter action you want to make (Login or register): ")
+    action = input("Enter action you want to make or quit (Login, register, quit): ")
     action = action.lower()
 
     if action == "login":
@@ -34,23 +34,19 @@ while logged:
     elif action == "register":
         username = input("Enter new username: ")
         password = input("Enter new password: ")
-
         if username == "quit" or password == "quit":
             print("returning to menu")
 
-        with open('usernames.json', 'r+') as usernames_file:
-            if "" == username or " " in username:
-                print("Invalid arguments (cannot use spaces)")
-            else:
+        if "" == username or " " in username:
+            print("Invalid arguments (cannot use spaces)")
+        else:
+            with open('usernames.json', 'r+') as usernames_file:
                 usernames_data = json.load(usernames_file)
                 usernames_data['id'].append(username)
                 usernames_file.seek(0)
                 json.dump(usernames_data, usernames_file)
 
-        with open('passwords.json', 'r+') as passwords_file:
-            if "" == password or " " in password:
-                print("Invalid arguments (cannot use spaces)")
-            else:
+            with open('passwords.json', 'r+') as passwords_file:
                 passwords_data = json.load(passwords_file)
                 passwords_data['password'].append(password)
                 passwords_file.seek(0)

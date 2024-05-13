@@ -3,7 +3,6 @@ import tkinter as tk
 from tkinter import messagebox
 
 def login():
-    global logged
     username = username_entry.get()
     password = password_entry.get()
 
@@ -20,7 +19,6 @@ def login():
         index = username_data['id'].index(username)
         if password == password_data['password'][index]:
             messagebox.showinfo("Login Successful", "Welcome, {}!".format(username))
-            logged = False
             root.destroy()
         else:
             messagebox.showerror("Login Failed", "Incorrect password.")
@@ -34,19 +32,16 @@ def register():
     if username == "quit" or password == "quit":
         return
 
-    with open('usernames.json', 'r+') as usernames_file:
-        if "" == username or " " in username:
-            messagebox.showerror("Registration Failed", "Invalid arguments (cannot use spaces)")
-        else:
+    if "" == username or " " in username:
+        messagebox.showerror("Registration Failed", "Invalid arguments (cannot use spaces)")
+    else:
+        with open('usernames.json', 'r+') as usernames_file:
             usernames_data = json.load(usernames_file)
             usernames_data['id'].append(username)
             usernames_file.seek(0)
             json.dump(usernames_data, usernames_file)
 
-    with open('passwords.json', 'r+') as passwords_file:
-        if "" == password or " " in password:
-            messagebox.showerror("Registration Failed", "Invalid arguments (cannot use spaces)")
-        else:
+        with open('passwords.json', 'r+') as passwords_file:
             passwords_data = json.load(passwords_file)
             passwords_data['password'].append(password)
             passwords_file.seek(0)
@@ -59,28 +54,25 @@ def quit_program():
 root = tk.Tk()
 root.title("Login/Register")
 
-frame = tk.Frame(root)
-frame.pack(expand=True, fill="both")
-
-username_label = tk.Label(frame, text="Enter username:")
+username_label = tk.Label(root, text="Enter username:")
 username_label.grid(row=0, column=0, padx=5, pady=5)
 
-username_entry = tk.Entry(frame)
+username_entry = tk.Entry(root)
 username_entry.grid(row=0, column=1, padx=5, pady=5)
 
-password_label = tk.Label(frame, text="Enter password:")
+password_label = tk.Label(root, text="Enter password:")
 password_label.grid(row=1, column=0, padx=5, pady=5)
 
-password_entry = tk.Entry(frame, show="*")
+password_entry = tk.Entry(root, show="*")
 password_entry.grid(row=1, column=1, padx=5, pady=5)
 
-login_button = tk.Button(frame, text="Login", command=login)
-login_button.grid(row=2, column=0, padx=5, pady=5)
+login_button = tk.Button(root, text="Login", command=login)
+login_button.grid(row=2, column=0, columnspan=2, padx=5, pady=5, sticky="ew")
 
-register_button = tk.Button(frame, text="Register", command=register)
-register_button.grid(row=2, column=1, padx=5, pady=5)
+register_button = tk.Button(root, text="Register", command=register)
+register_button.grid(row=3, column=0, columnspan=2, padx=5, pady=5, sticky="ew")
 
-quit_button = tk.Button(frame, text="Quit", command=quit_program)
-quit_button.grid(row=2, column=2, padx=5, pady=5)
+quit_button = tk.Button(root, text="Quit", command=quit_program)
+quit_button.grid(row=4, column=0, columnspan=2, padx=5, pady=5, sticky="ew")
 
 root.mainloop()
