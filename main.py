@@ -1,5 +1,5 @@
 import json
-
+import pygame
 
 # Login part
 logged = True
